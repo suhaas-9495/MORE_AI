@@ -7,14 +7,10 @@ router = APIRouter(prefix="/agent", tags=["agents"])
 
 
 @router.post("/run", response_model=AgentResponse)
-def run_agent(request: AgentRequest):
-    """
-    Run any agent type against a task.
-    Day 1: single agent. Day 5+: chained multi-agent pipeline.
-    """
+async def run_agent(request: AgentRequest):
     try:
         agent = BaseAgent(agent_type=request.agent_type)
-        output = agent.run(task=request.task, context=request.context)
+        output = await agent.run(task=request.task, context=request.context)
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))
 
@@ -22,6 +18,6 @@ def run_agent(request: AgentRequest):
         agent_type=request.agent_type,
         task=request.task,
         output=output,
-        model_used=settings.ollama_model,
+        model_used=settings.groq_model,
         status="success",
     )
