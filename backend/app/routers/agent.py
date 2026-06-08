@@ -10,14 +10,15 @@ router = APIRouter(prefix="/agent", tags=["agents"])
 async def run_agent(request: AgentRequest):
     try:
         agent = BaseAgent(agent_type=request.agent_type)
-        output = await agent.run(task=request.task, context=request.context)
+        result = await agent.run(task=request.task, context=request.context)
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))
 
     return AgentResponse(
         agent_type=request.agent_type,
         task=request.task,
-        output=output,
+        output=result["output"],
         model_used=settings.groq_model,
         status="success",
+        iterations=result["iterations"],
     )
