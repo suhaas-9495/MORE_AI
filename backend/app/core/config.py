@@ -7,8 +7,8 @@ class Settings(BaseSettings):
     env: str = "development"
     groq_api_key: str = ""
     groq_model: str = "llama-3.3-70b-versatile"
-    langfuse_public_key: str = ""
-    langfuse_secret_key: str = ""
-    langfuse_host: str = "https://cloud.langfuse.com"
+    secret_key: str = "change-me-in-production"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
 
 settings = Settings()

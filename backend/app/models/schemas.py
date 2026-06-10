@@ -6,27 +6,32 @@ class AgentRequest(BaseModel):
     agent_type: Literal["planner", "coder", "reviewer"] = "planner"
     context: Optional[str] = None
 
-class PlanStep(BaseModel):
-    step_number: int
-    action: str
-    reasoning: str
-
-class StructuredPlan(BaseModel):
-    goal: str
-    steps: List[PlanStep]
-    estimated_complexity: Literal["low", "medium", "high"]
-    requires_tools: List[str]
-
 class AgentResponse(BaseModel):
     agent_type: str
     task: str
     output: str
-    structured: Optional[dict] = None   # parsed JSON when available
+    structured: Optional[dict] = None
     model_used: str
     status: Literal["success", "error"]
-    iterations: int = 1                 # reflexion loop count
+    iterations: int = 1
 
 class HealthResponse(BaseModel):
     status: str
     app: str
     env: str
+
+class UserRegister(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=8)
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+class UserOut(BaseModel):
+    username: str
+    is_active: bool = True
