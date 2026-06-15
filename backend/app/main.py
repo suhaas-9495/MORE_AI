@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from backend.app.routers import agent, auth
+from backend.app.routers import agent, auth, rag
 from backend.app.models.schemas import HealthResponse
 from backend.app.core.config import settings
 
@@ -11,6 +11,7 @@ app = FastAPI(
 
 app.include_router(auth.router)
 app.include_router(agent.router)
+app.include_router(rag.router)
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])
 def health():
