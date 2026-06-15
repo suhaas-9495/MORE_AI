@@ -3,4 +3,7 @@ __pycache__/
 .env
 .venv/
 chroma_db/
-*.egg-info/
+*.egg-info/"moreai/" 
+"__pycache__/" 
+"*.pyc" 
+".venv/" 
