@@ -2,7 +2,6 @@ import time
 from backend.app.agents.graph import build_graph
 from backend.app.agents.state import AgentState
 from backend.app.agents.prompts import AGENT_SYSTEM_PROMPTS
-from backend.app.core.config import settings
 from backend.app.rag.pipeline import retrieve_context
 
 
@@ -14,10 +13,9 @@ class BaseAgent:
         self.graph = build_graph(agent_type)
 
     async def run(self, task: str, context: str = None, user: str = "anonymous") -> dict:
-        # auto-retrieve relevant docs from ChromaDB for this task
-        rag_context = retrieve_context(query=task, top_k=3)
+        # scoped to this user's own documents only — data isolation
+        rag_context = retrieve_context(query=task, top_k=3, user=user)
 
-        # merge RAG context with any manually passed context
         full_context = ""
         if rag_context:
             full_context += f"Relevant knowledge:\n{rag_context}\n\n"
@@ -25,17 +23,9 @@ class BaseAgent:
             full_context += f"Additional context:\n{context}"
 
         initial_state: AgentState = {
-            "task": task,
-            "context": full_context or None,
-            "agent_type": self.agent_type,
-            "plan": None,
-            "code": None,
-            "review": None,
-            "critique": None,
-            "final_output": None,
-            "iterations": 0,
-            "should_retry": False,
-            "errors": [],
+            "task": task, "context": full_context or None, "agent_type": self.agent_type,
+            "plan": None, "code": None, "review": None, "critique": None,
+            "final_output": None, "iterations": 0, "should_retry": False, "errors": [],
         }
 
         start = time.time()
@@ -43,7 +33,4 @@ class BaseAgent:
         latency = round(time.time() - start, 3)
         print(f"[{self.agent_type}] user={user} latency={latency}s iterations={final_state['iterations']}")
 
-        return {
-            "output": final_state["final_output"],
-            "iterations": final_state["iterations"],
-        }
+        return {"output": final_state["final_output"], "iterations": final_state["iterations"]}
