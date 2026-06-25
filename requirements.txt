@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+httpx
+python-dotenv
+langchain
+langchain-groq
+langgraph
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+chromadb
+sentence-transformers
+langchain-text-splitters
+rank-bm25

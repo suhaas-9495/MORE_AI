@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+moreai/
+chroma_db/
+.git/
+.gitignore
+README.md
+test_concurrent.py
+*.md
