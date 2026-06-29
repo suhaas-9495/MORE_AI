@@ -12,5 +12,8 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     chroma_db_path: str = "./chroma_db"
     embedding_model: str = "all-MiniLM-L6-v2"
+    langfuse_public_key: str = ""
+    langfuse_secret_key: str = ""
+    langfuse_host: str = "https://cloud.langfuse.com"
 
 settings = Settings()

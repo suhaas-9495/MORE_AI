@@ -3,11 +3,13 @@ from backend.app.agents.state import AgentState
 from backend.app.agents.llm_client import get_llm
 from backend.app.agents.prompts import AGENT_SYSTEM_PROMPTS
 import json
+from backend.app.core.observability import trace_observe
 
 llm = get_llm()
 llm_precise = get_llm(temperature=0.1)  # lower temp for critique/review
 
 
+@trace_observe(name="plan_node")
 async def plan_node(state: AgentState) -> AgentState:
     """Planner node — breaks task into structured steps."""
     messages = [
@@ -22,7 +24,7 @@ Always end your response with a JSON block like:
     response = await llm.ainvoke(messages)
     return {**state, "plan": response.content}
 
-
+@trace_observe(name="code_node")
 async def code_node(state: AgentState) -> AgentState:
     """Coder node — writes code based on the plan."""
     context = f"Plan:\n{state.get('plan', '')}\n\nOriginal task:\n{state['task']}"
@@ -34,6 +36,7 @@ async def code_node(state: AgentState) -> AgentState:
     return {**state, "code": response.content}
 
 
+@trace_observe(name="review_node")
 async def review_node(state: AgentState) -> AgentState:
     """Reviewer node — checks code quality."""
     content = state.get("code") or state.get("plan") or state["task"]
@@ -44,7 +47,7 @@ async def review_node(state: AgentState) -> AgentState:
     response = await llm_precise.ainvoke(messages)
     return {**state, "review": response.content}
 
-
+@trace_observe(name="reflexion_node")
 async def reflexion_node(state: AgentState) -> AgentState:
     """
     Reflexion — agent critiques its own output and decides
@@ -84,7 +87,7 @@ Be strict. Only mark good if output is genuinely production-ready."""),
         "iterations": state["iterations"] + 1,
     }
 
-
+@trace_observe(name="finalize_node")
 async def finalize_node(state: AgentState) -> AgentState:
     """Assembles final output from all nodes."""
     parts = []
