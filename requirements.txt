@@ -50,6 +50,7 @@ huggingface_hub==1.16.1
 idna==3.16
 importlib_metadata==9.0.0
 importlib_resources==7.1.0
+iniconfig==2.3.0
 jaraco.classes==3.4.0
 jaraco.context==6.1.2
 jaraco.functools==4.5.0
@@ -106,6 +107,7 @@ packaging==24.2
 passlib==1.7.4
 pathable==0.6.0
 platformdirs==4.9.6
+pluggy==1.6.0
 propcache==0.5.2
 protobuf==6.33.6
 py-key-value-aio==0.4.5
@@ -120,6 +122,8 @@ PyJWT==2.13.0
 pyperclip==1.11.0
 PyPika==0.51.1
 pyproject_hooks==1.2.0
+pytest==9.1.1
+pytest-asyncio==1.4.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 python-jose==3.5.0

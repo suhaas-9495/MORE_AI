@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from backend.app.routers import agent, auth, rag
+from backend.app.routers import agent, auth, rag, eval
 from backend.app.models.schemas import HealthResponse
 from backend.app.core.config import settings
 from backend.app.core.observability import get_langfuse_client
@@ -23,6 +23,7 @@ app = FastAPI(
 app.include_router(auth.router)
 app.include_router(agent.router)
 app.include_router(rag.router)
+app.include_router(eval.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])
