@@ -9,10 +9,12 @@ class AgentState(TypedDict):
     task: str
     context: Optional[str]
     agent_type: str
-    plan: Optional[str]           # planner output
-    code: Optional[str]           # coder output
-    review: Optional[str]         # reviewer output
+    plan: Optional[str]            
+    code: Optional[str]           
+    review: Optional[str]         
     critique: Optional[str]       # reflexion: self-critique
+    tests: Optional[str]
+    test_results: Optional[str]   # pass/fail output
     final_output: Optional[str]
     iterations: int               # how many reflexion loops ran
     should_retry: bool            # reflexion decision
