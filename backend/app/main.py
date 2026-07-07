@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
-from backend.app.routers import agent, auth, rag, eval, registry
+from backend.app.routers import agent, auth, rag, eval, registry, memory
 from backend.app.models.schemas import HealthResponse
 from backend.app.core.config import settings
 from backend.app.core.observability import get_langfuse_client
@@ -24,21 +24,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# rate limiting
 app.state.limiter = limiter
 
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
-    return JSONResponse(
-        status_code=429,
-        content={"detail": "Rate limit exceeded. Slow down."},
-    )
+    return JSONResponse(status_code=429, content={"detail": "Rate limit exceeded."})
 
 app.include_router(auth.router)
 app.include_router(agent.router)
 app.include_router(rag.router)
 app.include_router(eval.router)
 app.include_router(registry.router)
+app.include_router(memory.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])

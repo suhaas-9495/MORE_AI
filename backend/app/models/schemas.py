@@ -3,8 +3,9 @@ from typing import Optional, Literal, List
 
 class AgentRequest(BaseModel):
     task: str = Field(..., min_length=1)
-    agent_type: Literal["planner", "coder", "reviewer"] = "planner"
+    agent_type: Literal["planner", "coder", "reviewer", "tester"] = "planner"
     context: Optional[str] = None
+    session_id: Optional[str] = None    # pass this to maintain conversation memory
 
 class AgentResponse(BaseModel):
     agent_type: str
@@ -14,6 +15,7 @@ class AgentResponse(BaseModel):
     model_used: str
     status: Literal["success", "error"]
     iterations: int = 1
+    state_id: Optional[str] = None      # use this to track/resume pipeline
 
 class HealthResponse(BaseModel):
     status: str
