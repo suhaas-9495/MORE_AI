@@ -24,7 +24,7 @@ class HealthResponse(BaseModel):
 
 class UserRegister(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
-    password: str = Field(..., min_length=8)
+    password: str = Field(..., min_length=8, max_length=72)
 
 class UserLogin(BaseModel):
     username: str

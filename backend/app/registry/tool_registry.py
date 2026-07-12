@@ -21,7 +21,7 @@ class ToolRegistry:
         self._handlers: Dict[str, Callable] = {}
 
     def register(self, name: str, description: str, input_schema: Dict, handler: Callable, version: str = "1.0.0"):
-        self._tools[name] = ToolDefinition(
+        self.tools[name] = ToolDefinition(
             name=name,
             description=description,
             input_schema=input_schema,
@@ -31,23 +31,23 @@ class ToolRegistry:
         self._handlers[name] = handler
 
     def get_tool(self, name: str) -> Optional[ToolDefinition]:
-        return self._tools.get(name)
+        return self.tools.get(name)
 
     def get_handler(self, name: str) -> Optional[Callable]:
         return self._handlers.get(name)
 
     def list_tools(self) -> list:
-        return list(self._tools.values())
+        return list(self.tools.values())
 
     def disable(self, name: str):
-        if name in self._tools:
-            self._tools[name].enabled = False
+        if name in self.tools:
+            self.tools[name].enabled = False
 
     async def execute(self, name: str, inputs: Dict) -> Any:
         handler = self._handlers.get(name)
         if not handler:
             raise ValueError(f"Tool not found: {name}")
-        if not self._tools[name].enabled:
+        if not self.tools[name].enabled:
             raise ValueError(f"Tool is disabled: {name}")
         return await handler(**inputs)
 
