@@ -12,10 +12,13 @@ class AgentState(TypedDict):
     plan: Optional[str]            
     code: Optional[str]           
     review: Optional[str]         
-    critique: Optional[str]       # reflexion: self-critique
+    critique: Optional[str] # reflexion: self-critique
     tests: Optional[str]
-    test_results: Optional[str]   # pass/fail output
+    test_results: Optional[str] # pass/fail output
     final_output: Optional[str]
-    iterations: int               # how many reflexion loops ran
-    should_retry: bool            # reflexion decision
+    iterations: int  # how many reflexion loops ran
+    should_retry: bool   # reflexion decision
     errors: List[str]
+    research: Optional[str] 
+    documentation: Optional[str] 
+    
