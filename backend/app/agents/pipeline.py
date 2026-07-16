@@ -99,7 +99,7 @@ async def run_sdlc_pipeline(
             results["status"] = "rejected"
             results["approval_id"] = approval.approval_id
             return results
-
+ 
     # Stage 6: Document
     print("[Pipeline] Stage 6/7: Documenting...")
     documenter = BaseAgent(agent_type="documenter")
