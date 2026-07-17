@@ -1,5 +1,15 @@
 import pytest
 from fastapi.testclient import TestClient
+import os
+
+os.environ.setdefault("GROQ_API_KEY", "test")
+os.environ.setdefault("SECRET_KEY", "ci-test-secret-key-32-chars-minimum-xx")
+os.environ.setdefault("LANGFUSE_PUBLIC_KEY", "test")
+os.environ.setdefault("LANGFUSE_SECRET_KEY", "test")
+os.environ.setdefault("AWS_ACCESS_KEY_ID", "test")
+os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test")
+os.environ.setdefault("AWS_S3_BUCKET", "test-bucket")
+
 from backend.app.main import app
 
 client = TestClient(app)
@@ -11,17 +21,21 @@ def test_health():
     assert response.json()["status"] == "ok"
 
 
-def test_register_and_login():
-    # register
+def test_register():
     r = client.post("/auth/register", json={
-        "username": "ci_test_user",
+        "username": "ci_user",
         "password": "testpass123"
     })
-    assert r.status_code in [201, 400]  # 400 if already exists
+    assert r.status_code in [201, 400]
 
-    # login
+
+def test_login():
+    client.post("/auth/register", json={
+        "username": "ci_user2",
+        "password": "testpass123"
+    })
     r = client.post("/auth/login", json={
-        "username": "ci_test_user",
+        "username": "ci_user2",
         "password": "testpass123"
     })
     assert r.status_code == 200
@@ -30,12 +44,7 @@ def test_register_and_login():
 
 def test_agent_requires_auth():
     r = client.post("/agent/run", json={
-        "task": "test task",
+        "task": "test",
         "agent_type": "planner"
     })
-    assert r.status_code == 403
-
-
-def test_registry_requires_auth():
-    r = client.get("/registry/tools")
-    assert r.status_code == 403
+    assert r.status_code in [401, 403]

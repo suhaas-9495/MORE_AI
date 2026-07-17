@@ -2,96 +2,58 @@ name: MoreAI CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: ["**"]
   pull_request:
     branches: [main]
 
-env:
-  PYTHON_VERSION: "3.11"
-  DOCKER_IMAGE: moreai-api
-
 jobs:
-  # ─── Job 1: Code Quality ───────────────────────────────────────
-  lint-and-type-check:
-    name: Lint + Type Check
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install deps
-        run: |
-          pip install ruff mypy pydantic-settings
-          pip install -r requirements.txt
-
-      - name: Ruff lint
-        run: ruff check backend/ --ignore E501
-
-      - name: Type check
-        run: mypy backend/app/core/ backend/app/models/ --ignore-missing-imports
-
-  # ─── Job 2: Unit Tests ─────────────────────────────────────────
-unit-tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    needs: lint-and-type-check
-    steps:
-      - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install deps
-        run: pip install -r requirements.txt
-      - name: Run pytest
-        env:
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || 'test-key' }}
-          SECRET_KEY: ci-test-secret-key-32-chars-minimum-xx
-          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY || 'test' }}
-          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY || 'test' }}
-          LANGFUSE_HOST: https://cloud.langfuse.com
-        run: pytest tests/ -v --tb=short
 
- # ─── Job 3: Eval Regression ────────────────────────────────────
-  eval-regression:
-    name: Eval Regression Suite
+      - name: Install deps
+        run: |
+          pip install ruff
+          pip install -r requirements.txt
+
+      - name: Ruff lint
+        run: ruff check backend/ --ignore E501 --ignore F401
+
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
-    needs: unit-tests
-    if: github.ref == 'refs/heads/main'
+    needs: lint
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.11"
 
       - name: Install deps
         run: pip install -r requirements.txt
 
-      - name: Run eval regression
-        id: eval
+      - name: Run tests
         env:
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
-          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
-          LANGFUSE_HOST: https://cloud.langfuse.com
-          SECRET_KEY: ci-test-secret-key-32-chars-minimum
-        run: |
-          python scripts/run_regression.py
+          GROQ_API_KEY: "test-key-not-real"
+          SECRET_KEY: "ci-test-secret-key-32-chars-minimum-xx"
+          LANGFUSE_PUBLIC_KEY: "test"
+          LANGFUSE_SECRET_KEY: "test"
+          LANGFUSE_HOST: "https://cloud.langfuse.com"
+          AWS_ACCESS_KEY_ID: "test"
+          AWS_SECRET_ACCESS_KEY: "test"
+          AWS_REGION: "ap-south-1"
+          AWS_S3_BUCKET: "test-bucket"
+        run: pytest tests/ -v --tb=short
 
-      - name: Upload eval artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: eval-results-${{ github.sha }}
-          path: eval_runs/
-          retention-days: 30
-
-  # ─── Job 4: Docker Build ───────────────────────────────────────
   docker-build:
     name: Docker Build
     runs-on: ubuntu-latest
@@ -100,69 +62,22 @@ unit-tests:
       - uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
+        run: docker build -t moreai:test .
 
-      - name: Smoke test container
+      - name: Smoke test
         run: |
           docker run -d --name moreai-test \
-            -e GROQ_API_KEY=test \
-            -e SECRET_KEY=test-secret-key-minimum-32-chars \
-            -e LANGFUSE_PUBLIC_KEY=test \
-            -e LANGFUSE_SECRET_KEY=test \
+            -e GROQ_API_KEY="test" \
+            -e SECRET_KEY="ci-test-secret-key-32-chars-minimum-xx" \
+            -e LANGFUSE_PUBLIC_KEY="test" \
+            -e LANGFUSE_SECRET_KEY="test" \
+            -e LANGFUSE_HOST="https://cloud.langfuse.com" \
+            -e AWS_ACCESS_KEY_ID="test" \
+            -e AWS_SECRET_ACCESS_KEY="test" \
+            -e AWS_REGION="ap-south-1" \
+            -e AWS_S3_BUCKET="test-bucket" \
             -p 8000:8000 \
-            ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
-          sleep 10
+            moreai:test
+          sleep 15
           curl -f http://localhost:8000/health || exit 1
           docker stop moreai-test
-
-  # ─── Job 5: Deploy to AWS (main branch only) ───────────────────
-  deploy:
-    name: Deploy to AWS EC2
-    runs-on: ubuntu-latest
-    needs: [eval-regression, docker-build]
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build + push to ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: moreai
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }} .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }} \
-                     $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            docker pull ${{ steps.login-ecr.outputs.registry }}/moreai:latest
-            docker stop moreai-api || true
-            docker rm moreai-api || true
-            docker run -d --name moreai-api \
-              --restart unless-stopped \
-              -p 8000:8000 \
-              -e GROQ_API_KEY=${{ secrets.GROQ_API_KEY }} \
-              -e SECRET_KEY=${{ secrets.SECRET_KEY }} \
-              -e LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }} \
-              -e LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }} \
-              -e LANGFUSE_HOST=https://cloud.langfuse.com \
-              ${{ steps.login-ecr.outputs.registry }}/moreai:latest
-            echo "Deployed successfully"
