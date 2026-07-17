@@ -15,5 +15,11 @@ class Settings(BaseSettings):
     langfuse_public_key: str = ""
     langfuse_secret_key: str = ""
     langfuse_host: str = "https://cloud.langfuse.com"
+    
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
+    aws_region: str = "ap-south-1"
+    aws_s3_bucket: str = "moreai-artifacts"
+    aws_ec2_instance_id: str = ""
 
 settings = Settings()
