@@ -1,14 +1,15 @@
 import pytest
 from fastapi.testclient import TestClient
 import os
-
-os.environ.setdefault("GROQ_API_KEY", "test")
-os.environ.setdefault("SECRET_KEY", "ci-test-secret-key-32-chars-minimum-xx")
-os.environ.setdefault("LANGFUSE_PUBLIC_KEY", "test")
-os.environ.setdefault("LANGFUSE_SECRET_KEY", "test")
-os.environ.setdefault("AWS_ACCESS_KEY_ID", "test")
-os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test")
-os.environ.setdefault("AWS_S3_BUCKET", "test-bucket")
+os.environ["GROQ_API_KEY"] = "test-key"
+os.environ["SECRET_KEY"] = "ci-test-secret-key-32-chars-minimum-xx"
+os.environ["LANGFUSE_PUBLIC_KEY"] = "test"
+os.environ["LANGFUSE_SECRET_KEY"] = "test"
+os.environ["LANGFUSE_HOST"] = "https://cloud.langfuse.com"
+os.environ["AWS_ACCESS_KEY_ID"] = "test"
+os.environ["AWS_SECRET_ACCESS_KEY"] = "test"
+os.environ["AWS_REGION"] = "ap-south-1"
+os.environ["AWS_S3_BUCKET"] = "test-bucket"
 
 from backend.app.main import app
 

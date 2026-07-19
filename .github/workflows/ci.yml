@@ -40,9 +40,14 @@ jobs:
         run: |
           pip install fastapi uvicorn pydantic pydantic-settings \
             python-jose passlib bcrypt python-multipart \
-            httpx python-dotenv pytest pytest-asyncio
-          
-      - name: Run health test only
+            httpx python-dotenv pytest pytest-asyncio \
+            langchain langchain-groq langgraph \
+            chromadb sentence-transformers rank-bm25 \
+            langchain-text-splitters tiktoken \
+            slowapi boto3 langfuse mcp fastmcp \
+            presidio-analyzer presidio-anonymizer tenacity
+
+      - name: Run tests
         env:
           GROQ_API_KEY: "test-key"
           SECRET_KEY: "ci-test-secret-key-32-chars-minimum-xx"
@@ -53,4 +58,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: "test"
           AWS_REGION: "ap-south-1"
           AWS_S3_BUCKET: "test-bucket"
-        run: pytest tests/test_health.py::test_health -v
+        run: pytest tests/test_health.py -v --tb=short
