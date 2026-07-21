@@ -30,3 +30,15 @@ jobs:
           PR_NUMBER: ${{ github.event.number }}
         run: |
           python scripts/run_regression_pr.py
+
+      - name: Install deps
+        run: |
+          pip install fastapi uvicorn pydantic pydantic-settings \
+            python-jose "passlib[bcrypt]" "bcrypt==4.0.1" python-multipart \
+            httpx python-dotenv pytest pytest-asyncio \
+            langchain langchain-groq langgraph \
+            chromadb sentence-transformers rank-bm25 \
+            langchain-text-splitters tiktoken \
+            slowapi boto3 "langfuse==2.60.0" \
+            tenacity rich aiohttp
+          python -m spacy download en_core_web_lg
