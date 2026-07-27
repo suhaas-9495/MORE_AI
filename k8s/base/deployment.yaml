@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moreai-api
+  namespace: moreai
+  labels:
+    app: moreai-api
+spec:
+  replicas: 2                    # 2 replicas for HA
+  selector:
+    matchLabels:
+      app: moreai-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0          # zero downtime deployment
+  template:
+    metadata:
+      labels:
+        app: moreai-api
+    spec:
+      containers:
+        - name: moreai-api
+          image: moreai:latest   # replaced by CI/CD with ECR image
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: moreai-config
+            - secretRef:
+                name: moreai-secrets
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          volumeMounts:
+            - name: chroma-storage
+              mountPath: /app/chroma_db
+      volumes:
+        - name: chroma-storage
+          persistentVolumeClaim:
+            claimName: chroma-pvc

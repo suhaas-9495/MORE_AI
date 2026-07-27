@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: moreai-config
+  namespace: moreai
+data:
+  GROQ_MODEL: "llama-3.3-70b-versatile"
+  LANGFUSE_HOST: "https://cloud.langfuse.com"
+  AWS_REGION: "ap-south-1"
+  AWS_S3_BUCKET: "moreai-artifacts"
+  CHROMA_DB_PATH: "/app/chroma_db"
+  EMBEDDING_MODEL: "all-MiniLM-L6-v2"
+  ENV: "production"
