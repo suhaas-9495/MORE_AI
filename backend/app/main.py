@@ -12,11 +12,13 @@ from backend.app.core.config import settings
 from backend.app.core.observability import get_langfuse_client, flush
 from backend.app.core.rate_limiter import limiter
 from backend.app.registry.startup import register_all
+from backend.app.mlflow_tracking.tracker import setup_mlflow
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     register_all()
+    setup_mlflow()
     yield
     flush()
 
