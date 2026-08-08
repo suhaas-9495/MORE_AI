@@ -8,6 +8,12 @@ import { AgentRunner } from "./pages/AgentRunner";
 import { Pipeline } from "./pages/Pipeline";
 import { EvalMetrics } from "./pages/EvalMetrics";
 import { Approvals } from "./pages/Approvals";
+import { Memory } from "./pages/Memory";
+import { RAG } from "./pages/RAG";
+import { Registry } from "./pages/Registry";
+import { Experiments } from "./pages/Experiments";
+import { Prompts } from "./pages/Prompts";
+import { Observability } from "./pages/Observability";
 
 const Layout = ({ children }: { children: React.ReactNode }) => (
   <div className="flex">
@@ -35,6 +41,12 @@ const App = () => (
                 <Route path="/pipeline" element={<Pipeline />} />
                 <Route path="/eval" element={<EvalMetrics />} />
                 <Route path="/approvals" element={<Approvals />} />
+                <Route path="/memory" element={<Memory />} />
+                <Route path="/rag" element={<RAG />} />
+                <Route path="/registry" element={<Registry />} />
+                <Route path="/experiments" element={<Experiments />} />
+                <Route path="/prompts" element={<Prompts />} />
+                <Route path="/observability" element={<Observability />} />
               </Routes>
             </Layout>
           </ProtectedRoute>
