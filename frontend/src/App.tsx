@@ -14,6 +14,7 @@ import { Registry } from "./pages/Registry";
 import { Experiments } from "./pages/Experiments";
 import { Prompts } from "./pages/Prompts";
 import { Observability } from "./pages/Observability";
+import { GitHub } from "./pages/GitHub";
 
 const Layout = ({ children }: { children: React.ReactNode }) => (
   <div className="flex">
@@ -47,6 +48,7 @@ const App = () => (
                 <Route path="/experiments" element={<Experiments />} />
                 <Route path="/prompts" element={<Prompts />} />
                 <Route path="/observability" element={<Observability />} />
+                <Route path="/github" element={<GitHub />} />
               </Routes>
             </Layout>
           </ProtectedRoute>

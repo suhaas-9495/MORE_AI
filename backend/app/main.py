@@ -4,9 +4,9 @@ from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 from backend.app.routers import (
     agent, auth, rag, eval, registry,
-    memory, pipeline, artifacts, mlflow_router
+    memory, pipeline, artifacts, mlflow_router,
+    prompts_router, github_router
 )
-from backend.app.routers import prompts_router
 from backend.app.models.schemas import HealthResponse
 from backend.app.core.config import settings
 from backend.app.core.observability import get_langfuse_client, flush
@@ -48,6 +48,7 @@ app.include_router(pipeline.router)
 app.include_router(artifacts.router)
 app.include_router(mlflow_router.router)
 app.include_router(prompts_router.router)
+app.include_router(github_router.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])
