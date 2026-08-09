@@ -53,3 +53,13 @@ export const ingestDocument = (text: string, source: string) =>
 
 export const retrieveContext = (query: string, topK: number = 5) =>
   api.post("/rag/retrieve", { query, top_k: topK });
+
+export const getAllExperiments = () => api.get("/mlflow/experiments");
+export const getAgentExperiment = (agentType: string) =>
+  api.get(`/mlflow/experiments/${agentType}`);
+export const listPrompts = () => api.get("/prompts/");
+export const getPrompt = (agentType: string) => api.get(`/prompts/${agentType}`);
+export const getPromptChangelog = (agentType: string) =>
+  api.get(`/prompts/${agentType}/changelog`);
+export const reloadPrompt = (agentType: string) =>
+  api.post(`/prompts/${agentType}/reload`);
