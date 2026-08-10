@@ -1,18 +1,14 @@
+import os
 from langchain_groq import ChatGroq
 from langfuse.callback import CallbackHandler
 from backend.app.core.config import settings
-from backend.app.core.observability import get_langfuse_client
 
 
-def get_llm(temperature: float = 0.7, trace=None) -> ChatGroq:
+def get_llm(temperature: float = 0.7, trace=None, provider: str = "groq"):
     """
-    Returns a Groq LLM instance.
-    When a trace is passed, attaches Langfuse callback handler
-    so every LLM call inside this trace is automatically logged:
-    - prompt tokens, completion tokens
-    - latency per call
-    - input messages, output content
-    - cost estimation
+    LLM factory — supports Groq (default) and AWS Bedrock.
+    Swap provider without changing any agent code.
+    Production pattern: use Bedrock for compliance, Groq for speed.
     """
     callbacks = []
     if trace:
@@ -24,6 +20,21 @@ def get_llm(temperature: float = 0.7, trace=None) -> ChatGroq:
         )
         callbacks.append(handler)
 
+    if provider == "bedrock":
+        try:
+            from langchain_aws import ChatBedrock
+            return ChatBedrock(
+                model_id=settings.aws_bedrock_model_id,
+                region_name=settings.aws_bedrock_region,
+                aws_access_key_id=settings.aws_access_key_id,
+                aws_secret_access_key=settings.aws_secret_access_key,
+                model_kwargs={"temperature": temperature, "max_tokens": 4096},
+                callbacks=callbacks if callbacks else None,
+            )
+        except Exception:
+            # fallback to Groq if Bedrock fails
+            print("[LLM] Bedrock unavailable, falling back to Groq")
+
     return ChatGroq(
         api_key=settings.groq_api_key,
         model=settings.groq_model,
@@ -32,5 +43,5 @@ def get_llm(temperature: float = 0.7, trace=None) -> ChatGroq:
     )
 
 
-def get_llm_precise(trace=None) -> ChatGroq:
-    return get_llm(temperature=0.0, trace=trace)
+def get_llm_precise(trace=None, provider: str = "groq"):
+    return get_llm(temperature=0.0, trace=trace, provider=provider)

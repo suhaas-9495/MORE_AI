@@ -1,0 +1,11 @@
+README.md
+setup.py
+examples/__init__.py
+examples/basic_usage.py
+moreai_sdk/__init__.py
+moreai_sdk/client.py
+moreai_sdk.egg-info/PKG-INFO
+moreai_sdk.egg-info/SOURCES.txt
+moreai_sdk.egg-info/dependency_links.txt
+moreai_sdk.egg-info/requires.txt
+moreai_sdk.egg-info/top_level.txt

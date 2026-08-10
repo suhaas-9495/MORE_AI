@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: moreai-sdk
+Version: 0.1.0
+Summary: Python SDK for the MoreAI Multi-Agent SDLC Platform
+Author: Suhaas
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Requires-Python: >=3.9
+Requires-Dist: httpx>=0.24.0
+Dynamic: author
+Dynamic: classifier
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

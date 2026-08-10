@@ -5,7 +5,7 @@ from slowapi.errors import RateLimitExceeded
 from backend.app.routers import (
     agent, auth, rag, eval, registry,
     memory, pipeline, artifacts, mlflow_router,
-    prompts_router, github_router
+    prompts_router, github_router, bedrock_router
 )
 from backend.app.models.schemas import HealthResponse
 from backend.app.core.config import settings
@@ -49,6 +49,7 @@ app.include_router(artifacts.router)
 app.include_router(mlflow_router.router)
 app.include_router(prompts_router.router)
 app.include_router(github_router.router)
+app.include_router(bedrock_router.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])
