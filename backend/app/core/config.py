@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -15,11 +16,14 @@ class Settings(BaseSettings):
     langfuse_public_key: str = ""
     langfuse_secret_key: str = ""
     langfuse_host: str = "https://cloud.langfuse.com"
-    
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
     aws_region: str = "ap-south-1"
     aws_s3_bucket: str = "moreai-artifacts"
     aws_ec2_instance_id: str = ""
+    aws_bedrock_region: str = "us-east-1"
+    aws_bedrock_model_id: str = "anthropic.claude-3-5-sonnet-20241022-v2:0"
+    github_token: str = ""
+
 
 settings = Settings()
