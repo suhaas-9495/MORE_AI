@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import List
 
 
 class Settings(BaseSettings):
@@ -24,6 +25,18 @@ class Settings(BaseSettings):
     aws_bedrock_region: str = "us-east-1"
     aws_bedrock_model_id: str = "anthropic.claude-3-5-sonnet-20241022-v2:0"
     github_token: str = ""
+
+    # CORS
+    cors_origins: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "https://moreai.yourdomain.com",
+    ]
+
+    # production flags
+    debug: bool = False
+    log_level: str = "INFO"
+    max_request_size_mb: int = 10
 
 
 settings = Settings()
