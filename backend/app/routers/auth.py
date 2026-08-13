@@ -1,16 +1,18 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, Request, status
 from backend.app.models.schemas import UserRegister, UserLogin, Token, UserOut
 from backend.app.db.user_store import create_user, get_user
 from backend.app.core.security import verify_password, create_access_token
 from backend.app.core.dependencies import get_current_user
 from backend.app.core.audit import log_audit_event
 from backend.app.core.rbac import Role
+from backend.app.core.rate_limiter import limiter
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=UserOut, status_code=201)
-def register(payload: UserRegister):
+@limiter.limit("5/minute")    # prevent account creation abuse
+async def register(request: Request, payload: UserRegister):
     try:
         user = create_user(payload.username, payload.password, role=Role.DEVELOPER)
     except ValueError as e:
@@ -20,14 +22,18 @@ def register(payload: UserRegister):
 
 
 @router.post("/login", response_model=Token)
-def login(payload: UserLogin):
+@limiter.limit("10/minute")   # prevent brute force
+async def login(request: Request, payload: UserLogin):
     user = get_user(payload.username)
     if not user or not verify_password(payload.password, user["hashed_password"]):
         log_audit_event(
             action="auth:login", user=payload.username,
             resource="auth", status="failed",
         )
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+        )
     log_audit_event(action="auth:login", user=payload.username, resource="auth")
     token = create_access_token({"sub": payload.username})
     return Token(access_token=token)
@@ -39,7 +45,8 @@ async def me(current_user: dict = Depends(get_current_user)):
 
 
 @router.get("/audit-logs", tags=["admin"])
-async def get_audit_logs(current_user: dict = Depends(get_current_user)):
+async def get_audit_logs_endpoint(
+    current_user: dict = Depends(get_current_user),
+):
     from backend.app.core.audit import get_audit_logs
-    from backend.app.core.rbac import require_permission
     return get_audit_logs(limit=100)
