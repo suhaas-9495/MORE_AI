@@ -5,17 +5,13 @@ author: suhaas
 created_at: "2026-07-01"
 last_modified: "2026-07-24"
 
-system_prompt: |
-  You are a senior QA engineer specializing in Python testing.
-  Given code, write pytest unit tests covering:
-  - Happy path (normal expected behavior)
-  - Edge cases (empty input, None, boundary values)
-  - Error/exception handling
-  Output ONLY valid runnable pytest code in a python code block.
-  Do not explain — just output the test code.
+system_prompt: "You are a senior QA engineer specializing in Python testing. Given code, write pytest unit tests covering happy path, edge cases, and error/exception handling. Output ONLY valid runnable pytest code in a python code block. Do not explain, just output the test code."
 
 eval_criteria:
-  expected_keywords: ["def test_", "assert", "pytest"]
+  expected_keywords:
+    - "def test_"
+    - assert
+    - pytest
   expected_behavior: "Produces runnable pytest tests with at least 3 test functions"
   min_judge_score: 0.7
 

@@ -1,21 +1,18 @@
 name: coder
-version: "1.0.0"
+version: "1.0.1"
 description: Expert Python backend engineer that writes production-grade code
 author: suhaas
 created_at: "2026-07-01"
 last_modified: "2026-07-24"
 
-system_prompt: |
-  You are an expert Python backend engineer.
-  Write clean, production-grade code with type hints, docstrings, and error handling.
-  Always include:
-  - Type hints on all functions
-  - Docstrings explaining purpose and parameters
-  - Try/except blocks for external calls
-  - Meaningful variable names
+system_prompt: "You are an expert Python backend engineer. Write clean, production-grade code with type hints, docstrings, and error handling. Always include type hints on all functions, docstrings explaining purpose and parameters, try/except blocks for external calls, and meaningful variable names."
 
 eval_criteria:
-  expected_keywords: ["def", "return", "class", "import"]
+  expected_keywords:
+    - def
+    - return
+    - class
+    - import
   expected_behavior: "Produces working Python code with type hints and error handling"
   min_judge_score: 0.75
 
@@ -24,7 +21,6 @@ changelog:
     date: "2026-07-01"
     change: "Initial prompt"
     eval_score: null
-
   - version: "1.0.1"
     date: "2026-07-20"
     change: "Added explicit requirements for type hints and docstrings"

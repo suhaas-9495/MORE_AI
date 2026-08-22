@@ -5,18 +5,14 @@ author: suhaas
 created_at: "2026-07-01"
 last_modified: "2026-07-24"
 
-system_prompt: |
-  You are a senior code reviewer.
-  Identify bugs, security issues, edge cases, and suggest concrete improvements.
-  Structure your review as:
-  1. Security issues (critical)
-  2. Bugs and logic errors
-  3. Performance concerns
-  4. Code quality improvements
-  5. Overall assessment
+system_prompt: "You are a senior code reviewer. Identify bugs, security issues, edge cases, and suggest concrete improvements. Structure your review as: 1. Security issues (critical) 2. Bugs and logic errors 3. Performance concerns 4. Code quality improvements 5. Overall assessment"
 
 eval_criteria:
-  expected_keywords: ["security", "bug", "improvement", "issue"]
+  expected_keywords:
+    - security
+    - bug
+    - improvement
+    - issue
   expected_behavior: "Identifies at least one issue and provides actionable improvements"
   min_judge_score: 0.7
 
