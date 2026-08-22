@@ -9,48 +9,44 @@ import json
 async def plan_node(state: AgentState) -> AgentState:
     trace = state.get("trace")
     llm = get_llm(trace=trace)
-
-    span = trace.span(name="plan_node", input={"task": state["task"]}) if trace else None
+    span = trace.span(name="plan_node") if trace else None
 
     research_context = f"Research findings:\n{state.get('research', '')}\n\n" if state.get("research") else ""
     messages = [
-        SystemMessage(content=AGENT_SYSTEM_PROMPTS["planner"] + """
-Always end your response with a JSON block:
-````json
-{"goal": "...", "steps": [{"step_number": 1, "action": "...", "reasoning": "..."}],
- "estimated_complexity": "low|medium|high", "requires_tools": [...]}
-```"""),
+        SystemMessage(content=AGENT_SYSTEM_PROMPTS["planner"]),
         HumanMessage(content=f"{research_context}Task:\n{state['task']}"),
     ]
     response = await llm.ainvoke(messages)
-
     if span:
-        span.end(output={"plan_preview": response.content[:200]})
-
+        try:
+            span.end(output={"plan_preview": response.content[:200]})
+        except Exception:
+            pass
     return {**state, "plan": response.content}
 
 
 async def research_node(state: AgentState) -> AgentState:
     trace = state.get("trace")
     llm = get_llm(trace=trace)
-    span = trace.span(name="research_node", input={"task": state["task"]}) if trace else None
+    span = trace.span(name="research_node") if trace else None
 
     messages = [
         SystemMessage(content=AGENT_SYSTEM_PROMPTS["researcher"]),
         HumanMessage(content=f"Research this task:\n{state['task']}"),
     ]
     response = await llm.ainvoke(messages)
-
     if span:
-        span.end(output={"research_preview": response.content[:200]})
-
+        try:
+            span.end(output={"research_preview": response.content[:200]})
+        except Exception:
+            pass
     return {**state, "research": response.content}
 
 
 async def code_node(state: AgentState) -> AgentState:
     trace = state.get("trace")
     llm = get_llm(trace=trace)
-    span = trace.span(name="code_node", input={"task": state["task"]}) if trace else None
+    span = trace.span(name="code_node") if trace else None
 
     context = f"Research:\n{state.get('research', '')}\n\nPlan:\n{state.get('plan', '')}"
     if state.get("test_results"):
@@ -61,10 +57,11 @@ async def code_node(state: AgentState) -> AgentState:
         HumanMessage(content=f"{context}\n\nTask:\n{state['task']}"),
     ]
     response = await llm.ainvoke(messages)
-
     if span:
-        span.end(output={"code_preview": response.content[:200]})
-
+        try:
+            span.end(output={"code_preview": response.content[:200]})
+        except Exception:
+            pass
     return {**state, "code": response.content}
 
 
@@ -79,10 +76,11 @@ async def review_node(state: AgentState) -> AgentState:
         HumanMessage(content=content),
     ]
     response = await llm.ainvoke(messages)
-
     if span:
-        span.end(output={"review_preview": response.content[:200]})
-
+        try:
+            span.end(output={"review_preview": response.content[:200]})
+        except Exception:
+            pass
     return {**state, "review": response.content}
 
 
@@ -102,8 +100,10 @@ async def test_node(state: AgentState) -> AgentState:
     test_summary = f"PASSED: {result['passed']}\n\n{result['output']}"
 
     if span:
-        span.end(output={"test_passed": result["passed"], "exit_code": result["exit_code"]})
-
+        try:
+            span.end(output={"test_passed": result["passed"]})
+        except Exception:
+            pass
     return {**state, "tests": test_code, "test_results": test_summary}
 
 
@@ -117,10 +117,11 @@ async def documentation_node(state: AgentState) -> AgentState:
         HumanMessage(content=f"Document:\n{state.get('code', '')}\n\nReview:\n{state.get('review', '')}"),
     ]
     response = await llm.ainvoke(messages)
-
     if span:
-        span.end(output={"docs_preview": response.content[:200]})
-
+        try:
+            span.end(output={"docs_preview": response.content[:200]})
+        except Exception:
+            pass
     return {**state, "documentation": response.content}
 
 
@@ -132,7 +133,10 @@ async def reflexion_node(state: AgentState) -> AgentState:
     if state.get("test_results") and "PASSED: False" in state["test_results"]:
         should_retry = state["iterations"] < 2
         if span:
-            span.end(output={"decision": "retry_on_test_failure", "should_retry": should_retry})
+            try:
+                span.end(output={"should_retry": should_retry})
+            except Exception:
+                pass
         return {
             **state,
             "critique": f"Tests failed:\n{state['test_results']}",
@@ -142,8 +146,7 @@ async def reflexion_node(state: AgentState) -> AgentState:
 
     output = state.get("code") or state.get("plan") or ""
     messages = [
-        SystemMessage(content="""Evaluate output quality. Respond ONLY with JSON:
-{"quality": "good|needs_improvement", "issues": [...], "should_retry": true|false}"""),
+        SystemMessage(content='Evaluate output quality. Respond ONLY with JSON: {"quality": "good|needs_improvement", "issues": [], "should_retry": false}'),
         HumanMessage(content=f"Output:\n{output}"),
     ]
     response = await llm.ainvoke(messages)
@@ -161,7 +164,10 @@ async def reflexion_node(state: AgentState) -> AgentState:
         should_retry = False
 
     if span:
-        span.end(output={"should_retry": should_retry, "critique_preview": critique[:100]})
+        try:
+            span.end(output={"should_retry": should_retry})
+        except Exception:
+            pass
 
     return {**state, "critique": critique, "should_retry": should_retry,
             "iterations": state["iterations"] + 1}
@@ -169,8 +175,7 @@ async def reflexion_node(state: AgentState) -> AgentState:
 
 async def finalize_node(state: AgentState) -> AgentState:
     trace = state.get("trace")
-    if trace:
-        span = trace.span(name="finalize_node")
+    span = trace.span(name="finalize_node") if trace else None
 
     parts = []
     if state.get("research"):
@@ -190,7 +195,10 @@ async def finalize_node(state: AgentState) -> AgentState:
     if state.get("critique"):
         parts.append(f"## Self-Critique\n{state['critique']}")
 
-    if trace:
-        span.end(output={"sections": len(parts)})
+    if span:
+        try:
+            span.end(output={"sections": len(parts)})
+        except Exception:
+            pass
 
     return {**state, "final_output": "\n\n---\n\n".join(parts)}
