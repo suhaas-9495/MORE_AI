@@ -1,24 +1,28 @@
 import os
 from langchain_groq import ChatGroq
-from langfuse.callback import CallbackHandler
 from backend.app.core.config import settings
 
 
-def get_llm(temperature: float = 0.7, trace=None, provider: str = "groq"):
-    """
-    LLM factory — supports Groq (default) and AWS Bedrock.
-    Swap provider without changing any agent code.
-    Production pattern: use Bedrock for compliance, Groq for speed.
-    """
-    callbacks = []
-    if trace:
-        handler = CallbackHandler(
+def _get_langfuse_callback(trace):
+    """Lazy import — only loads Langfuse callback when actually needed."""
+    try:
+        from langfuse.callback import CallbackHandler
+        return CallbackHandler(
             public_key=settings.langfuse_public_key,
             secret_key=settings.langfuse_secret_key,
             host=settings.langfuse_host,
             trace_id=trace.id,
         )
-        callbacks.append(handler)
+    except Exception:
+        return None
+
+
+def get_llm(temperature: float = 0.7, trace=None, provider: str = "groq"):
+    callbacks = []
+    if trace:
+        handler = _get_langfuse_callback(trace)
+        if handler:
+            callbacks.append(handler)
 
     if provider == "bedrock":
         try:
@@ -32,7 +36,6 @@ def get_llm(temperature: float = 0.7, trace=None, provider: str = "groq"):
                 callbacks=callbacks if callbacks else None,
             )
         except Exception:
-            # fallback to Groq if Bedrock fails
             print("[LLM] Bedrock unavailable, falling back to Groq")
 
     return ChatGroq(
